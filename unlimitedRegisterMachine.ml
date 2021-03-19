@@ -1,6 +1,9 @@
 (* Unlimited Register Machine Implementation *)
 
 
+open Format ;;
+
+
 (*Registre = int et un index*)
 type register = Register of int | Empty ;;
 
@@ -16,22 +19,23 @@ type program = Commands of command list * int * register list | Vide ;;
 
 
 (*Test liste*)
-let register1 = Register(1) ;;
-let register2 = Register(2) ;;
-let liste = [register1;register2] ;;
+
 let programme = Commands([Zero(0);Zero(1);Successor(0);Successor(0);Copy(0,1)],0,[Register(12);Register(18)]);;
-let programme1 = Commands([Zero(0)],0,[Register(12)]);;
+let programme1 = Commands([Zero(0)],0,[Register(12);Register(16);Register(16);Register(16);Register(16);Register(16);]);;
 
 
-match programme with
-	| Commands(listeDesCommandes,instructioncourrante,listeDesRegistres) -> match (List.nth listeDesCommandes instructioncourrante) with Zero(n) -> replace listeDesRegistres n (Register(0))
-;;
+
+
 
 (*Operation*)
 let execute_commands program =
 	match program with
 		| Commands(listeDesCommandes,instructioncourrante,listeDesRegistres) -> 
+			print_registre listeDesRegistres;
+			print_newline();
 			let rec aux_execute_commands liste listecommandes instructioncourrante = 
+				print_instruction (List.nth listecommandes instructioncourrante) ;
+				print_newline();
 					let listeregistre = match (List.nth listecommandes instructioncourrante) with
 					| Zero(n) -> replace liste n (Register(0))
 					| Successor(n) -> add liste n
@@ -41,21 +45,25 @@ let execute_commands program =
 					in let instruction = match (List.nth listecommandes instructioncourrante) with
 								| Jump(m,n,q) -> jump liste m n q instructioncourrante
 								| _ -> instructioncourrante+1
-							in if instruction <= List.length(listecommandes) then
+							in 
+   							print_registre listeregistre;
+ 							print_newline();
+							if instruction < List.length(listecommandes) then
 								 aux_execute_commands listeregistre listecommandes instruction
 							 else
 								 (List.hd listeregistre)
+							 
 	
 			in aux_execute_commands listeDesRegistres listeDesCommandes instructioncourrante
 		| Vide -> failwith("Programme vide")
 		
 ;;
 
+
 let jump liste m n q instructioncourrante = match (List.nth liste m, List.nth liste n) with 
 						| Register(x),Register(y) -> if x=y then q else instructioncourrante+1
 						| _ -> instructioncourrante+1;;
-		
-		
+			
 	
 let replace liste position newvalue =
 	List.mapi (fun i x -> if i=position then newvalue else x) liste ;;
@@ -66,16 +74,27 @@ let add liste position =
 							| Register(z) -> Register(z+1) 
 							| _ -> x
 						else x) liste ;;
-		
+
+
+(*Gestion de l'affichage*)
+let print_registre listeRegistre = 
+	let rec aux_print_registre listeRegistre compteur= match listeRegistre with
+		[] -> ();
+		| e::l -> match e with 
+		 			| Register(n) -> printf "R%d=%d " compteur n; aux_print_registre l (compteur+1)
+					| _ -> printf "R%d=Vide " compteur; aux_print_registre l (compteur+1) 
+	in aux_print_registre listeRegistre 0
+;;
+	
+let print_instruction instruction = 
+	match instruction with
+	| Zero(n) -> printf "Instruction Zero(%d) : " n;
+	| Successor(n) -> printf "Instruction Successor(%d) : " n;
+	| Copy(m,n) -> printf "Instruction Copy(%d,%d) : " m n;
+	| Jump(m,n,q) -> printf "Instruction Jump(%d,%d,%d) : " m n q;
+;;
 		
 	
 
-(*Termination*)
-
-(*Input*)
-
-(*Output*)
-
-(*Null program*)
 
 
