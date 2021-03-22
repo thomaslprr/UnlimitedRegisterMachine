@@ -22,9 +22,7 @@ type program = Commands of command list * int * register list | Vide ;;
 
 let programme = Commands([Zero(0);Zero(1);Successor(0);Successor(0);Copy(0,1)],0,[Register(12);Register(18)]);;
 let programme1 = Commands([Zero(0)],0,[Register(12);Register(16);Register(16);Register(16);Register(16);Register(16);]);;
-
-
-
+let programme2 = Commands([Zero(0);Jump(12,34,3);Copy(14,12)],0,[Register(12);Register(16);Register(16);Register(16);Register(16);Register(16);]);;
 
 
 (*Operation*)
@@ -39,7 +37,7 @@ let execute_commands program =
 					let listeregistre = match (List.nth listecommandes instructioncourrante) with
 					| Zero(n) -> replace liste n (Register(0))
 					| Successor(n) -> add liste n
-					| Copy(m,n) -> replace liste n (List.nth liste m)
+					| Copy(m,n) -> if (m<List.length liste && n<List.length liste) then replace liste n (List.nth liste m) else liste
 					| Jump(m,n,q) -> liste 
 	
 					in let instruction = match (List.nth listecommandes instructioncourrante) with
@@ -60,9 +58,12 @@ let execute_commands program =
 ;;
 
 
-let jump liste m n q instructioncourrante = match (List.nth liste m, List.nth liste n) with 
-						| Register(x),Register(y) -> if x=y then q else instructioncourrante+1
-						| _ -> instructioncourrante+1;;
+let jump liste m n q instructioncourrante = if (m<(List.length liste) && n<(List.length liste)) then 
+										match (List.nth liste m, List.nth liste n) with 
+											| Register(x),Register(y) -> if x=y then q else instructioncourrante+1
+											| _ -> instructioncourrante+1
+										else
+											instructioncourrante+1;;
 			
 	
 let replace liste position newvalue =
