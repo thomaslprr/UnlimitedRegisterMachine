@@ -20,9 +20,14 @@ type program = Commands of command list * int * register list | Vide ;;
 
 (*Test liste*)
 
-let programme = Commands([Zero(0);Zero(1);Successor(0);Successor(0);Copy(0,1)],0,[Register(12);Register(18)]);;
-let programme1 = Commands([Zero(0)],0,[Register(12);Register(16);Register(16);Register(16);Register(16);Register(16);]);;
-let programme2 = Commands([Zero(0);Jump(12,34,3);Copy(14,12)],0,[Register(12);Register(16);Register(16);Register(16);Register(16);Register(16);]);;
+
+let programme3 = Commands([Successor(0);Jump(0,1,99);Jump(0,0,0)],0,[Register(0);Register(100);]);; (*affichage des entiers positifs de 1 à 100*)
+let programme3 = Commands([Jump(1,2,-1);Successor(2);Successor(0);Jump(0,0,0)],0,[Register(12);Register(6);Register(0)]);; (*Addition de deux registres*)
+let programme4 = Commands([Jump(0,1,4);Successor(1);Successor(2);Jump(0,0,0);Copy(2,0)],0,[Register(25);Register(25);Register(0)]);; (*Soustraction de deux registres*)
+
+
+
+
 
 
 (*Operation*)
@@ -37,7 +42,7 @@ let execute_commands program =
 					let listeregistre = match (List.nth listecommandes instructioncourrante) with
 					| Zero(n) -> replace liste n (Register(0))
 					| Successor(n) -> add liste n
-					| Copy(m,n) -> if (m<List.length liste && n<List.length liste) then replace liste n (List.nth liste m) else liste
+					| Copy(m,n) -> if (m<List.length liste && n<List.length liste && n>=0 && m>=0) then replace liste n (List.nth liste m) else liste
 					| Jump(m,n,q) -> liste 
 	
 					in let instruction = match (List.nth listecommandes instructioncourrante) with
@@ -46,7 +51,7 @@ let execute_commands program =
 							in 
    							print_registre listeregistre;
  							print_newline();
-							if instruction < List.length(listecommandes) then
+							if instruction < List.length(listecommandes) && instruction>=0 then
 								 aux_execute_commands listeregistre listecommandes instruction
 							 else
 								 (List.hd listeregistre)
