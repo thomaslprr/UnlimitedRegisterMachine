@@ -1,30 +1,38 @@
 (* Unlimited Register Machine Implementation *)
 
 
+(*Import pour l'utilisation de printf*)
 open Format ;;
 
 
-(*Registre = int et un index*)
+(*Register / Registre *)
+
+(*Création du type registre 
+- Prend un int en paramètre qui correspond à la valeur que prendra le registre 
+
+Exemple d'appel : # let register1 = Register(342) 
+La valeur de register1 sera de 342*)
 type register = Register of int ;;
 
 
-
-(*Basic Instructions *)
+(*Basic Instructions / Instructions *)
 
 type command = Zero of int | Successor of int| Copy of int*int | Jump of int*int*int ;;
 
-(*Program*)
+(*Program / Programme *)
 
 type program = Commands of command list * int * register list | Vide ;;
 
 
-(*Test liste*)
+(*Exemple de création de programme *)
 
+(* Programme qui additionne deux registres*)
+let programme1 = Commands([Jump(2,3,5);Successor(3);Successor(1);Jump(1,1,1)],1,[Register(12);Register(6);Register(0)]);; 
+(*Programme qui soustrait deux registres*)
+let programme2 = Commands([Jump(1,2,5);Successor(-3);Successor(0);Jump(0,1,1);Copy(-3,1)],1,[Register(25);Register(11);Register(0)]);; 
+(*Programme qui effectue une division par 2 et renvoie la valeur si c'est possible sinon boucle infinie*)
+let programme3 = Commands([Jump(1,2,6);Successor(3);Successor(2);Successor(2);Jump(1,1,1);Copy(3,1)],1,[Register(245);Register(2);Register(1)]);; 
 
-let programme3 = Commands([Jump(2,3,5);Successor(3);Successor(1);Jump(1,1,1)],1,[Register(12);Register(6);Register(0)]);; (*Addition de deux registres*)
-let programme4 = Commands([Jump(1,2,5);Successor(-3);Successor(0);Jump(0,1,1);Copy(-3,1)],1,[Register(25);Register(11);Register(0)]);; (*Soustraction de deux registres*)
-
-let programme5 = Commands([Jump(1,2,6);Successor(3);Successor(2);Successor(2);Jump(1,1,1);Copy(3,1)],1,[Register(245);Register(2);Register(1)]);; (*division par 2, boucle infinie si pas possible*)
 
 (*Gestion de l'affichage*)
 let print_registre listeRegistre = 
@@ -43,8 +51,28 @@ let print_instruction instruction =
 	| Jump(m,n,q) -> printf "Instruction Jump(%d,%d,%d) : " m n q;
 ;;
 
+(*Fonctions parallèles*)
 
-(*Operation*)
+let jump liste m n q instructioncourrante = if (m<(List.length liste) && n<(List.length liste) && n>=0 && m>=0) then 
+										match (List.nth liste m, List.nth liste n) with 
+											| Register(x),Register(y) -> if x=y then q else instructioncourrante+1
+										else
+											instructioncourrante+1;;
+			
+	
+let replace liste position newvalue =
+	List.mapi (fun i x -> if i=position then newvalue else x) liste ;;
+		 
+let add liste position = 
+	List.mapi (fun i x -> if i=position then 
+							match x with 
+							| Register(z) -> Register(z+1) 
+						else x) liste ;;
+
+
+
+(*Execute commands / Execution d'instructions*)
+						
 let execute_commands program =
 	match program with
 		| Commands(listeDesCommandes,instructioncourrante,listeDesRegistres) -> 
@@ -77,21 +105,6 @@ let execute_commands program =
 ;;
 
 
-let jump liste m n q instructioncourrante = if (m<(List.length liste) && n<(List.length liste) && n>=0 && m>=0) then 
-										match (List.nth liste m, List.nth liste n) with 
-											| Register(x),Register(y) -> if x=y then q else instructioncourrante+1
-										else
-											instructioncourrante+1;;
-			
-	
-let replace liste position newvalue =
-	List.mapi (fun i x -> if i=position then newvalue else x) liste ;;
-		 
-let add liste position = 
-	List.mapi (fun i x -> if i=position then 
-							match x with 
-							| Register(z) -> Register(z+1) 
-						else x) liste ;;
 
 
 
