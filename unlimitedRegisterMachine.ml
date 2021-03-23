@@ -5,7 +5,7 @@ open Format ;;
 
 
 (*Registre = int et un index*)
-type register = Register of int | Empty ;;
+type register = Register of int ;;
 
 
 
@@ -26,6 +26,22 @@ let programme4 = Commands([Jump(1,2,5);Successor(-3);Successor(0);Jump(0,1,1);Co
 
 let programme5 = Commands([Jump(1,2,6);Successor(3);Successor(2);Successor(2);Jump(1,1,1);Copy(3,1)],1,[Register(245);Register(2);Register(1)]);; (*division par 2, boucle infinie si pas possible*)
 
+(*Gestion de l'affichage*)
+let print_registre listeRegistre = 
+	let rec aux_print_registre listeRegistre compteur= match listeRegistre with
+		[] -> ();
+		| e::l -> match e with 
+		 			| Register(n) -> printf "R%d=%d " compteur n; aux_print_registre l (compteur+1)
+	in aux_print_registre listeRegistre 1
+;;
+	
+let print_instruction instruction = 
+	match instruction with
+	| Zero(n) -> printf "Instruction Zero(%d) : " n;
+	| Successor(n) -> printf "Instruction Successor(%d) : " n;
+	| Copy(m,n) -> printf "Instruction Copy(%d,%d) : " m n;
+	| Jump(m,n,q) -> printf "Instruction Jump(%d,%d,%d) : " m n q;
+;;
 
 
 (*Operation*)
@@ -64,7 +80,6 @@ let execute_commands program =
 let jump liste m n q instructioncourrante = if (m<(List.length liste) && n<(List.length liste) && n>=0 && m>=0) then 
 										match (List.nth liste m, List.nth liste n) with 
 											| Register(x),Register(y) -> if x=y then q else instructioncourrante+1
-											| _ -> instructioncourrante+1
 										else
 											instructioncourrante+1;;
 			
@@ -76,27 +91,10 @@ let add liste position =
 	List.mapi (fun i x -> if i=position then 
 							match x with 
 							| Register(z) -> Register(z+1) 
-							| _ -> x
 						else x) liste ;;
 
 
-(*Gestion de l'affichage*)
-let print_registre listeRegistre = 
-	let rec aux_print_registre listeRegistre compteur= match listeRegistre with
-		[] -> ();
-		| e::l -> match e with 
-		 			| Register(n) -> printf "R%d=%d " compteur n; aux_print_registre l (compteur+1)
-					| _ -> printf "R%d=Vide " compteur; aux_print_registre l (compteur+1) 
-	in aux_print_registre listeRegistre 1
-;;
-	
-let print_instruction instruction = 
-	match instruction with
-	| Zero(n) -> printf "Instruction Zero(%d) : " n;
-	| Successor(n) -> printf "Instruction Successor(%d) : " n;
-	| Copy(m,n) -> printf "Instruction Copy(%d,%d) : " m n;
-	| Jump(m,n,q) -> printf "Instruction Jump(%d,%d,%d) : " m n q;
-;;
+
 		
 	
 
