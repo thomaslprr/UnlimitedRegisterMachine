@@ -17,21 +17,29 @@ let pred n =
     | Null   -> failwith "pred Zero is undefined"
     | Succ m -> m ;;
 	
-	let rec nat_to_int n plus= 
+	
+let nat_to_int n naturalPlus = 	
+	let res = let rec aux_nat_to_int n= 
 	  match n with
-	    | Null   -> if(plus=false) then 0  else failwith "Value 0 doesn't exist for natural * "
-	    | Succ m -> 1 + nat_to_int m plus;;
+	    | Null   -> 0
+	    | Succ m -> 1 + aux_nat_to_int m 
+	in aux_nat_to_int n 
+in match naturalPlus with
+	| true -> if res = 0 then failwith "nat_to_int is undefined for 0 in natural *" else res
+	| false -> res
+	;;
+		
+		
 
-	let rec int_to_nat i plus=
-  	if i < 0 then failwith "nat_of_int is undefined on negative ints"
-	else if (i=0) then
-	  match plus with
-	  | true -> failwith "Value 0 doesn't exist for natural * "
-	  | false -> Null
-	  
-	 else match (i,plus) with 
-	 | (1,true) -> Succ Null
-	 | (_,_) -> Succ (int_to_nat (i-1) plus) ;;
+let int_to_nat i naturalPlus =
+	let res = let rec aux_int_to_nat i =
+	  if i < 0 then failwith "int_to_nat is undefined on negative ints"
+	  else if i = 0 then Null
+	  else Succ (aux_int_to_nat (i-1)) 
+  	in  (aux_int_to_nat i) 
+in match naturalPlus with
+	| true -> if res=Null then failwith "int_to_nat is undefined for 0 in natural *" else res
+	| false -> res ;; 
 
 
 (*Register / Registre *)
@@ -55,8 +63,8 @@ type program = Commands of command list * natural * register list ;;
 
 (*Exemple de création de programme *)
 
-let programmevide = Commands([],1,[Register(23)]) ;;
-let programmesansregistre = Commands([],1,[Register(23)]) ;;
+let programmevide = Commands([],(int_to_nat 5 true),[Register((int_to_nat 23 false))]) ;;
+let programmesansregistre = Commands([],(int_to_nat 1 true),[]) ;;
 
 
 (* Programme qui additionne deux registres*)
@@ -88,8 +96,8 @@ let print_instruction instruction =
 
 let jump liste m n q instructioncourrante = 
 	 
-	let m = (nat_to_int m true) in
-	let n = (nat_to_int n true) in
+	let m = (nat_to_int m false) in
+	let n = (nat_to_int n false) in
 	if (m<(List.length liste) && n<(List.length liste)) then 
 										match (List.nth liste m, List.nth liste n) with 
 											| Register(x),Register(y) -> if x=y then q else Succ(instructioncourrante)
@@ -111,50 +119,6 @@ let add liste position =
 
 
 (*Execute commands / Execution d'instructions*)
-						
-let execute_commands program =
-	match program with
-		| Commands(listeDesCommandes,instructioncourrante,listeDesRegistres) -> 
-			print_registre listeDesRegistres;
-			print_newline();
-			let rec aux_execute_commands liste listecommandes instructioncourrante = 
-				let instructioncrt = nat_to_int instructioncourrante true in
-				if (listecommandes != []) then 
-				begin
-				print_instruction (List.nth listecommandes instructioncrt) ;
-				print_newline();
-					let listeregistre = match (List.nth listecommandes instructioncrt) with
-					| Zero(n) -> replace liste (pred n) (Register(Null))
-					| Successor(n) -> add liste (pred n)
-					| Copy(m,n) -> 
-						let mm = nat_to_int m true in
-						let nn = nat_to_int n true in
-						if (mm<=List.length liste && nn<=List.length liste) then replace liste (pred n) (List.nth liste (pred m)) else liste
-					| Jump(m,n,q) -> liste 
-	
-					in let instruction = match (List.nth listecommandes instructioncrt) with
-								| Jump(m,n,q) -> jump liste (pred m) (pred n) (pred q) instructioncrt
-								| _ -> Succ(instructioncrt)
-							in 
-   							print_registre listeregistre;
- 							print_newline();
-							if (nat_to_int instruction false) < List.length(listecommandes) then
-								 aux_execute_commands listeregistre listecommandes instruction
-							 else
-								 (List.hd listeregistre)
-					end
-				else
-					begin
-					printf "Programme vide";
-					print_newline();
-					(List.hd liste)	
-				end	 
-	
-			in aux_execute_commands listeDesRegistres listeDesCommandes (pred instructioncourrante)
-		
-;;
-
-
 
 
 let execute_commands program =
@@ -163,7 +127,7 @@ let execute_commands program =
 			print_registre listeDesRegistres;
 			print_newline();
 			let rec aux_execute_commands liste listecommandes instructioncourrante = 
-				let instructioncrt = nat_to_int instructioncourrante true in  
+				let instructioncrt = nat_to_int instructioncourrante false in  
 				if (listecommandes != []) then 
 				begin
 				print_instruction (List.nth listecommandes instructioncrt) ;
