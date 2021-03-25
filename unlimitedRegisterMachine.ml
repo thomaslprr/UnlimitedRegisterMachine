@@ -4,20 +4,21 @@
 (*Import pour l'utilisation de printf*)
 open Format ;;
 
-
+(*Déclaration type entier naturel*)
 type natural = Null | Succ of natural ;;
-
+(* Fonction pour savoir si un entier naturel est égal à 0 *)
 let iszero n = 
   match n with
     | Null   -> true
     | Succ m -> false ;;
 
+(*Fonction qui retourne le prédécesseur d'un entier naturel et fail s'il n'en existe pas*)
 let pred n = 
   match n with
     | Null   -> failwith "pred Zero is undefined"
     | Succ m -> m ;;
 	
-	
+(*Fonction qui convertit un entier naturel en entier*)	
 let nat_to_int n naturalPlus = 	
 	let res = let rec aux_nat_to_int n= 
 	  match n with
@@ -30,7 +31,7 @@ in match naturalPlus with
 	;;
 		
 		
-
+(*Fonction qui convertit un int en entier naturel et fail si ce n'est pas possible*)
 let int_to_nat i naturalPlus =
 	let res = let rec aux_int_to_nat i =
 	  if i < 0 then failwith "int_to_nat is undefined on negative ints"
@@ -45,9 +46,9 @@ in match naturalPlus with
 (*Register / Registre *)
 
 (*Création du type registre 
-- Prend un int en paramètre qui correspond à la valeur que prendra le registre 
+- Prend un entier naturel en paramètre qui correspond à la valeur que prendra le registre 
 
-Exemple d'appel : # let register1 = Register(342) 
+Exemple d'appel : # let register1 = Register(int_to_nat 342 false) 
 La valeur de register1 sera de 342*)
 type register = Register of natural ;;
 
@@ -70,12 +71,13 @@ let programmesansregistre = Commands([],(int_to_nat 1 true),[]) ;;
 (* Programme qui additionne deux registres*)
 let programme1 = Commands([Jump((int_to_nat 2 true),(int_to_nat 3 true),(int_to_nat 5 false));Successor(int_to_nat 3 true);Successor((int_to_nat 1 true));Jump((int_to_nat 1 true),(int_to_nat 1 true),(int_to_nat 1 false))],(int_to_nat 1 true),[Register((int_to_nat 12 false));Register((int_to_nat 6 false));Register((int_to_nat 0 false))]);; 
 (*Programme qui soustrait deux registres*)
-let programme2 = Commands([Jump(1,2,5);Successor(-3);Successor(0);Jump(0,1,1);Copy(-3,1)],1,[Register(25);Register(11);Register(0)]);; 
-(*Programme qui effectue une division par 2 et renvoie la valeur si c'est possible sinon boucle infinie*)
-let programme3 = Commands([Jump(1,2,6);Successor(3);Successor(2);Successor(2);Jump(1,1,1);Copy(3,1)],1,[Register(245);Register(2);Register(1)]);; 
+let programme2 = Commands([Jump((int_to_nat 1 true),(int_to_nat 2 true),(int_to_nat 5 false));Successor((int_to_nat 3 true));Successor((int_to_nat 2 true));Jump((int_to_nat 1 true),(int_to_nat 1 true),(int_to_nat 1 false));Copy((int_to_nat 3 true),(int_to_nat 1 true))],(int_to_nat 1 true),[Register(int_to_nat 25 false);Register(int_to_nat 15 false);Register((int_to_nat 0 false))]);; 
+(*Programme qui effectue une division par 2 et renvoie la valeur si c'est possible sinon boucle à l'infini*)
+let programme3 = Commands([Jump(1,2,6);Successor(3);Successor(2);Successor(2);Jump(1,1,1);Copy(3,1)],1,[Register(246);Register(2);Register(1)]);; 
 
 
 (*Gestion de l'affichage*)
+(*affiche tous les registres d'une liste et leur valeur*)
 let print_registre listeRegistre = 
 	let rec aux_print_registre listeRegistre compteur= match listeRegistre with
 		[] -> ();
@@ -83,7 +85,7 @@ let print_registre listeRegistre =
 		 			| Register(n) -> printf "R%d=%d " compteur (nat_to_int n false); aux_print_registre l (compteur+1)
 	in aux_print_registre listeRegistre 1
 ;;
-	
+(*affiche une instruction*)	
 let print_instruction instruction = 
 	match instruction with
 	| Zero(n) -> printf "Instruction Zero(%d) : " (nat_to_int n true);
@@ -92,82 +94,89 @@ let print_instruction instruction =
 	| Jump(m,n,q) -> printf "Instruction Jump(%d,%d,%d) : " (nat_to_int m true) (nat_to_int n true) (nat_to_int q false);
 ;;
 
-(*Fonctions parallèles*)
-
-let jump liste m n q instructioncourrante = 
+(*Fonctions parallèles/intermédiaires*)
+(*retourne l'instruction à exécuter après un saut*)
+let jump listeregistres m n q instructioncourrante = 
 	 
-	let m = (nat_to_int m false) in
-	let n = (nat_to_int n false) in
-	if (m<(List.length liste) && n<(List.length liste)) then 
-										match (List.nth liste m, List.nth liste n) with 
-											| Register(x),Register(y) -> if x=y then q else Succ(instructioncourrante)
+	let m = (nat_to_int (pred m) false) in
+	let n = (nat_to_int (pred n) false) in
+	if (m<(List.length listeregistres) && n<(List.length listeregistres)) then 
+										match (List.nth listeregistres m, List.nth listeregistres n) with 
+											| Register(x),Register(y) -> if x=y then (pred q) else Succ(instructioncourrante)
 										else
 											Succ(instructioncourrante);;
 			
-	
-let replace liste position newvalue =
+(*Fonction qui remplace une valeur par une autre *)	
+let replace listeregistres position newvalue =
 	let position = nat_to_int position false in 
-	List.mapi (fun i x -> if i=position then newvalue else x) liste ;;
-		 
-let add liste position = 
+	List.mapi (fun i x -> if i=position then newvalue else x) listeregistres ;;
+
+(*Fonction qui ajoute un à une position précisée*)
+let add listeregistres position = 
 	let position = nat_to_int position false in 
 	List.mapi (fun i x -> if i=position then 
 							match x with 
 							| Register(z) -> Register(Succ z) 
-						else x) liste ;;
+						else x) listeregistres ;;
 
 
 
 (*Execute commands / Execution d'instructions*)
+(*Fonction qui retourne une liste de registre après avoir subi une instruction*)
+let getRegisters listeregistres listecommandes instructioncourrante = 
+	match (List.nth listecommandes instructioncourrante) with
+	| Zero(n) -> replace listeregistres (pred n) (Register(Null))
+	| Successor(n) -> add listeregistres (pred n)
+	| Copy(m,n) -> 
+		if ((nat_to_int m true)<=List.length listeregistres && (nat_to_int n true)<=List.length listeregistres) 
+			then replace listeregistres (pred n) (List.nth listeregistres ((nat_to_int (pred m) true))) 
+			else listeregistres
+	| Jump(m,n,q) -> listeregistres  ;;
+	
+(*Fonction qui retourne la valeur de la prochaine instruction à exécuter après avoir subi une instruction*)
+let getInstruction listecommandes instructioncourrante listeregistres =	
+	match (List.nth listecommandes instructioncourrante) with
+							| Jump(m,n,q) -> jump listeregistres m n q (int_to_nat instructioncourrante false)
+							| _ -> Succ((int_to_nat instructioncourrante false)) ;;
 
-
+(* Fonction principale qui prend un programme en paramètre et renvoie sa liste de registre(s) avec leur valeur obtenue à la fin de l'exécution *)
 let execute_commands program =
 	match program with
 		| Commands(listeDesCommandes,instructioncourrante,listeDesRegistres) -> 
-			print_registre listeDesRegistres;
-			print_newline();
-			let rec aux_execute_commands liste listecommandes instructioncourrante = 
-				let instructioncrt = nat_to_int instructioncourrante false in  
-				if (listecommandes != []) then 
-				begin
-				print_instruction (List.nth listecommandes instructioncrt) ;
+				(*Affichage des registres au début du programme*)
+				print_registre listeDesRegistres;
 				print_newline();
-					let listeregistre = match (List.nth listecommandes instructioncrt) with
-					| Zero(n) -> replace liste (pred n) (Register(Null))
-					| Successor(n) -> add liste (pred n)
-					| Copy(m,n) -> 
-						let mm = nat_to_int m true in
-						let nn = nat_to_int n true in
-						if (mm<=List.length liste && nn<=List.length liste) then replace liste (pred n) (List.nth liste (mm-1)) else liste
-						| Jump(m,n,q) -> liste 
-						
-					
-					in 
-
-					let instruction = match (List.nth listecommandes instructioncrt) with
-													| Jump(m,n,q) -> jump liste (pred m) (pred n) (pred q) instructioncourrante
-													| _ -> Succ(instructioncourrante)
-												in 
-												print_registre listeregistre;
-												print_newline();
-												if (nat_to_int instruction false) < List.length(listecommandes) then
-													 aux_execute_commands listeregistre listecommandes instruction
-												 else
-								 (List.hd listeregistre)
-					end
-				else
-					begin
-					printf "Programme vide";
-					print_newline();
-					(List.hd liste)	
-				end	 
+				(*Sous programme récursif*)
+				let rec aux_execute_commands listeregistres listecommandes instructioncourrante = 
+						(*On vérifie qu'il ne s'agit pas d'un programme vide*)
+						if (listecommandes != []) then 
+						begin
+							(*Affichage de l'instruction en cours*)
+							print_instruction (List.nth listecommandes instructioncourrante) ;
+							print_newline();
+							
+							(*Récupération de l'état des registres après exécution de l'instruction*)
+							let liste_registres_maj = getRegisters listeregistres listecommandes instructioncourrante in 
+								(*Récupération de l'état des instructions après l'exécution de l'instruction*)
+								let instruction = getInstruction listecommandes instructioncourrante listeregistres in 
+									(*Affichage des registres après une instruction*)
+									print_registre liste_registres_maj;
+									print_newline();
+												
+									(*S'il y a encore des instructions on continue le programme sinon on arrête*)
+									if (nat_to_int instruction false) < List.length(listecommandes) then
+										aux_execute_commands liste_registres_maj listecommandes (nat_to_int instruction false)
+									else
+								 		(List.hd liste_registres_maj)
+						end
+						else
+						begin
+							printf "Programme vide";
+							print_newline();
+							(List.hd listeregistres)	
+						end	 
 	
-			in aux_execute_commands listeDesRegistres listeDesCommandes (pred instructioncourrante)
-		
-;;
+			in aux_execute_commands listeDesRegistres listeDesCommandes (nat_to_int (pred instructioncourrante) false) ;;
 		
 	
 	
-
-
-
