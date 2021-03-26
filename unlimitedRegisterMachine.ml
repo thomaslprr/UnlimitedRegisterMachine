@@ -61,20 +61,8 @@ type command = Zero of natural | Successor of natural| Copy of natural*natural |
 
 type program = Commands of command list * natural * register list ;;
 
-
-(*Exemple de création de programme *)
-
-let programmevide = Commands([],(int_to_nat 5 true),[Register((int_to_nat 23 false))]) ;;
-let programmesansregistre = Commands([],(int_to_nat 1 true),[]) ;;
-
-
-(* Programme qui additionne deux registres*)
-let programme1 = Commands([Jump((int_to_nat 2 true),(int_to_nat 3 true),(int_to_nat 5 false));Successor(int_to_nat 3 true);Successor((int_to_nat 1 true));Jump((int_to_nat 1 true),(int_to_nat 1 true),(int_to_nat 1 false))],(int_to_nat 1 true),[Register((int_to_nat 12 false));Register((int_to_nat 6 false));Register((int_to_nat 0 false))]);; 
-(*Programme qui soustrait deux registres*)
-let programme2 = Commands([Jump((int_to_nat 1 true),(int_to_nat 2 true),(int_to_nat 5 false));Successor((int_to_nat 3 true));Successor((int_to_nat 2 true));Jump((int_to_nat 1 true),(int_to_nat 1 true),(int_to_nat 1 false));Copy((int_to_nat 3 true),(int_to_nat 1 true))],(int_to_nat 1 true),[Register(int_to_nat 25 false);Register(int_to_nat 15 false);Register((int_to_nat 0 false))]);; 
-(*Programme qui effectue une division par 2 et renvoie la valeur si c'est possible sinon boucle à l'infini*)
-let programme3 = Commands([Jump(1,2,6);Successor(3);Successor(2);Successor(2);Jump(1,1,1);Copy(3,1)],1,[Register(246);Register(2);Register(1)]);; 
-
+(*Import des exemples*)
+#use "examples.ml" ;;
 
 (*Gestion de l'affichage*)
 (*affiche tous les registres d'une liste et leur valeur*)
@@ -129,7 +117,7 @@ let getRegisters listeregistres listecommandes instructioncourrante =
 	| Successor(n) -> add listeregistres (pred n)
 	| Copy(m,n) -> 
 		if ((nat_to_int m true)<=List.length listeregistres && (nat_to_int n true)<=List.length listeregistres) 
-			then replace listeregistres (pred n) (List.nth listeregistres ((nat_to_int (pred m) true))) 
+			then replace listeregistres (pred n) (List.nth listeregistres ((nat_to_int (pred m) false))) 
 			else listeregistres
 	| Jump(m,n,q) -> listeregistres  ;;
 	
@@ -146,11 +134,18 @@ let execute_commands program =
 				(*Affichage des registres au début du programme*)
 				print_registre listeDesRegistres;
 				print_newline();
+				(*On vérifie que le programme contient des registres et qu'il ne s'agit pas d'un programme vide*)
+				match (listeDesCommandes, listeDesRegistres) with
+				| (_,[]) -> failwith "Le programme ne contient aucun registre"
+				| ([],_) -> printf "Programme vide";
+							print_newline();
+							(List.hd listeDesRegistres)
+				| (_,_) ->	
+				
 				(*Sous programme récursif*)
 				let rec aux_execute_commands listeregistres listecommandes instructioncourrante = 
-						(*On vérifie qu'il ne s'agit pas d'un programme vide*)
-						if (listecommandes != []) then 
-						begin
+						
+						
 							(*Affichage de l'instruction en cours*)
 							print_instruction (List.nth listecommandes instructioncourrante) ;
 							print_newline();
@@ -168,13 +163,6 @@ let execute_commands program =
 										aux_execute_commands liste_registres_maj listecommandes (nat_to_int instruction false)
 									else
 								 		(List.hd liste_registres_maj)
-						end
-						else
-						begin
-							printf "Programme vide";
-							print_newline();
-							(List.hd listeregistres)	
-						end	 
 	
 			in aux_execute_commands listeDesRegistres listeDesCommandes (nat_to_int (pred instructioncourrante) false) ;;
 		
