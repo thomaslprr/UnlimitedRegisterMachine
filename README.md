@@ -1,5 +1,5 @@
-# UnlimitedRegisterMachine
-Implementation of Unlimited Register Machine with OCaml
+# Machine à registres | UnlimitedRegisterMachine
+Implémentation des machines à registres avec OCaml | Implementation of Unlimited Register Machine with OCaml
 
 # Fichiers
 
