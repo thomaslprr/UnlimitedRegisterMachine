@@ -13,7 +13,7 @@ Ce fichier contient plusieurs exemples d'utilisation des machines à registres.
 
 # Compilation
 
-Pour utiliser le module développer il faut : 
+Pour utiliser le module développé il faut : 
 - Se placer à la base du répertoire contenant les deux fichiers .ml
 - Lancer ocaml : 
 ``> eval `opam env` `` puis ``> ocaml `` 
@@ -24,7 +24,7 @@ Vous devriez voir tout le script défiler et s'exécuter.
 
 # Exécution
 
-A présent, si vous souhaitez tester le code et découvrir le module développé, plusieurs jeux d'essais ont été conçu. Vous retrouverez ci-dessous les différents exemples, leur rôle et comment les utiliser.
+A présent, si vous souhaitez tester le code et découvrir le module développé, plusieurs jeux d'essais ont été conçu. Vous retrouverez ci-dessous les différents exemples, leur but et comment les utiliser.
 
 ### empty_program
 
