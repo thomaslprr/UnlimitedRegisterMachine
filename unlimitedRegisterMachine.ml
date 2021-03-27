@@ -4,6 +4,7 @@
 (*Import pour l'utilisation de printf*)
 open Format ;;
 
+(*Création type entier naturel et des fonctions nécessaires pour utiliser ce type*)
 (*Déclaration type entier naturel*)
 type natural = Null | Succ of natural ;;
 (* Fonction pour savoir si un entier naturel est égal à 0 *)
@@ -43,8 +44,8 @@ in match naturalPlus with
 	| false -> res ;; 
 
 
+(*Création des types spécifiques aux URM*)
 (*Register / Registre *)
-
 (*Création du type registre 
 - Prend un entier naturel en paramètre qui correspond à la valeur que prendra le registre 
 
@@ -89,10 +90,10 @@ let jump listeregistres m n q instructioncourrante =
 	let m = (nat_to_int (pred m) false) in
 	let n = (nat_to_int (pred n) false) in
 	if (m<(List.length listeregistres) && n<(List.length listeregistres)) then 
-										match (List.nth listeregistres m, List.nth listeregistres n) with 
-											| Register(x),Register(y) -> if x=y then (pred q) else Succ(instructioncourrante)
-										else
-											Succ(instructioncourrante);;
+		match (List.nth listeregistres m, List.nth listeregistres n) with 
+			| Register(x),Register(y) -> if x=y then (pred q) else Succ(instructioncourrante)
+	else
+		Succ(instructioncourrante);;
 			
 (*Fonction qui remplace une valeur par une autre *)	
 let replace listeregistres position newvalue =
@@ -108,8 +109,6 @@ let add listeregistres position =
 						else x) listeregistres ;;
 
 
-
-(*Execute commands / Execution d'instructions*)
 (*Fonction qui retourne une liste de registre après avoir subi une instruction*)
 let getRegisters listeregistres listecommandes instructioncourrante = 
 	match (List.nth listecommandes instructioncourrante) with
@@ -124,9 +123,11 @@ let getRegisters listeregistres listecommandes instructioncourrante =
 (*Fonction qui retourne la valeur de la prochaine instruction à exécuter après avoir subi une instruction*)
 let getInstruction listecommandes instructioncourrante listeregistres =	
 	match (List.nth listecommandes instructioncourrante) with
-							| Jump(m,n,q) -> jump listeregistres m n q (int_to_nat instructioncourrante false)
-							| _ -> Succ((int_to_nat instructioncourrante false)) ;;
+		| Jump(m,n,q) -> jump listeregistres m n q (int_to_nat instructioncourrante false)
+		| _ -> Succ((int_to_nat instructioncourrante false)) ;;
 
+
+(*Execute commands / Execution d'instructions*)
 (* Fonction principale qui prend un programme en paramètre et renvoie sa liste de registre(s) avec leur valeur obtenue à la fin de l'exécution *)
 let execute_commands program =
 	match program with
@@ -146,25 +147,22 @@ let execute_commands program =
 				let rec aux_execute_commands listeregistres listecommandes instructioncourrante = 
 						
 						
-							(*Affichage de l'instruction en cours*)
-							print_instruction (List.nth listecommandes instructioncourrante) ;
-							print_newline();
+					(*Affichage de l'instruction en cours*)
+					print_instruction (List.nth listecommandes instructioncourrante) ;
+					print_newline();
 							
-							(*Récupération de l'état des registres après exécution de l'instruction*)
-							let liste_registres_maj = getRegisters listeregistres listecommandes instructioncourrante in 
-								(*Récupération de l'état des instructions après l'exécution de l'instruction*)
-								let instruction = getInstruction listecommandes instructioncourrante listeregistres in 
-									(*Affichage des registres après une instruction*)
-									print_registre liste_registres_maj;
-									print_newline();
+					(*Récupération de l'état des registres après exécution de l'instruction*)
+					let liste_registres_maj = getRegisters listeregistres listecommandes instructioncourrante in 
+						(*Récupération de l'état des instructions après l'exécution de l'instruction*)
+						let instruction = getInstruction listecommandes instructioncourrante listeregistres in 
+							(*Affichage des registres après une instruction*)
+							print_registre liste_registres_maj;
+							print_newline();
 												
-									(*S'il y a encore des instructions on continue le programme sinon on arrête*)
-									if (nat_to_int instruction false) < List.length(listecommandes) then
-										aux_execute_commands liste_registres_maj listecommandes (nat_to_int instruction false)
-									else
-								 		(List.hd liste_registres_maj)
+							(*S'il y a encore des instructions on continue le programme sinon on arrête*)
+							if (nat_to_int instruction false) < List.length(listecommandes) then
+								aux_execute_commands liste_registres_maj listecommandes (nat_to_int instruction false)
+							else
+								(List.hd liste_registres_maj)
 	
-			in aux_execute_commands listeDesRegistres listeDesCommandes (nat_to_int (pred instructioncourrante) false) ;;
-		
-	
-	
+				in aux_execute_commands listeDesRegistres listeDesCommandes (nat_to_int (pred instructioncourrante) false) ;;
