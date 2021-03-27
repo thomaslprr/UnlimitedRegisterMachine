@@ -61,3 +61,29 @@ let multiplication_program = Commands(
 	,(int_to_nat 1 true),
 	
 	[Register((int_to_nat 201 false));Register((int_to_nat 4 false));Register(Null);Register(Null);Register(Null)]);;
+	
+	
+(*exemples de déclarations de registres*)
+	
+(*registre de valeur de l'entier naturel 2*)
+let register1 = Register(Succ(Succ(Null))) ;;  
+
+(*registre de valeur de l'entier naturel 36*)
+let register2 = Register(int_to_nat 36 false) ;;
+
+(*exemples de déclarations de registres*)
+
+(*entier naturel = 6*)
+let six = Succ(Succ(Succ(Succ(Succ(Succ(Null))))));;
+(*vérification en le convertissant en entier*)
+nat_to_int six false ;;
+
+
+(*exemples d'appels de fonctions*)
+int_to_nat 0 true ;; (*échoue car on essaye de convertir 0 comme entier naturel plus grand que 0*)
+
+int_to_nat 0 false ;; (*fonctionne et créé un entier naturel égal à 0 *)
+
+int_to_nat 15 false ;; (* convertit 15 en nombre naturel *)
+
+nat_to_int (Succ(Succ(Succ(Succ(Null))))) false ;; (* convertit le nombre naturel 4 en nombre entier relatif 4 *)
